@@ -4,6 +4,7 @@ Unit Testing for Visual Novel Scene
 import unittest
 from code.world import Scene, Background, Character
 from code.util import *
+from PIL import Image
 
 class TestUtil(unittest.TestCase):
     def test_util_check_validity_of_name(self):
@@ -23,7 +24,42 @@ class TestCharacter(unittest.TestCase):
     pass
 
 class TestBackground(unittest.TestCase):
-    pass
+    def test_background_default(self):
+        background = Background()
+        self.assertIsNone(background.name)
+        self.assertIsNone(background.image)
+
+    def test_background_name(self):
+        background = Background()
+        self.assertIsNone(background.name)
+        with self.assertRaises(TypeError):
+            background.set_name(Scene())
+        background.set_name("School Yard")
+        self.assertEquals(background.name, "School Yard")
+        background.name = 70.5
+        with self.assertRaises(TypeError):
+            check_validity_of_name(background.name)
+
+    def test_background_image(self):
+        # Check default
+        # Set to a png or jpg
+        background = Background()
+        image_png = Image.open("images/backgrounds/example.png")
+        image_jpg = Image.open("images/backgrounds/example.jpg")
+        self.assertIsNone(background.image)
+        with self.assertRaises(TypeError):
+            background.set_image(5)
+        with self.assertRaises(TypeError):
+            background.set_image("Hello.pn")
+        with self.assertRaises(FileNotFoundError):
+            background.set_image("does_not_exist.jpg")
+        background.set_image("example.png")
+        self.assertEquals(background.image, image_png)
+        background.set_image("example.jpg")
+        self.assertEquals(background.image, image_jpg)
+        background.image = "Definitely not a file"
+        with self.assertRaises(TypeError):
+            check_validity_of_image(background.image, BACKGROUND_PATH)
     
 class TestScene(unittest.TestCase):
 
@@ -52,7 +88,25 @@ class TestScene(unittest.TestCase):
         with self.assertRaises(TypeError):
             check_validity_of_name(scene.name)
 
+    def test_scene_background(self):
+        pass
+    
+    def test_scene_character_a(self):
+        pass
+    
+    def test_scene_character_b(self):
+        pass
+    
+    def test_scene_text_element(self):
+        pass
+
 class TestWorld(unittest.TestCase):
+    pass
+
+class TestUI(unittest.TestCase):
+    pass
+
+class TestGame(unittest.TestCase):
     pass
 
 if __name__ == '__main__':
