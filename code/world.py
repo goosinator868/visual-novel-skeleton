@@ -1,8 +1,13 @@
 """
 world.py
 """
-from code.util import *
+import PIL
 from PIL import Image
+
+"""
+Macros
+"""
+BACKGROUND_PATH = "images/backgrounds/"
 
 class Character():
     pass
@@ -18,7 +23,7 @@ class Background():
         self.name = new_name
     
     def set_image(self, image_path):
-        check_validity_of_image(image_path, BACKGROUND_PATH)
+        check_validity_of_image_path(image_path, self)
         self.image = Image.open(BACKGROUND_PATH + image_path)
 
 
@@ -45,7 +50,8 @@ class Scene():
         self.name = new_name
 
     def set_background(self, new_background):
-        pass
+        check_validity_of_background(new_background)
+        self.background = new_background
 
 """
 World()
@@ -70,4 +76,57 @@ Description:
 """
 class Game():
     pass
-        
+
+
+
+"""
+Utils
+"""
+
+"""
+checks that a name is a string
+TODO check for no duplicate names
+"""
+def check_validity_of_name(name):
+    if not isinstance(name, str):
+            raise TypeError("Name is not a string.")
+    # TODO check for no duplicates
+
+"""
+checks that an image path is valid
+TODO Account for other types
+"""
+def check_validity_of_image_path(image_path, caller):
+    if isinstance(caller, Background):
+        if not isinstance(image_path, str):
+            raise TypeError("Image path is not a string.")
+        image_type = image_path.split(".")
+        if len(image_type) != 2:
+            raise ValueError("Image not set. Make sure the image is of the format png or jpg.")
+
+        if image_type[1] == "png" or image_type[1] == "jpg":
+            image = Image.open(BACKGROUND_PATH + image_path)
+        else:
+            raise ValueError("Image not set. Make sure the image is of the format png or jpg.")
+    else:
+        raise TypeError("This type doesn't have a valid image to check.")
+
+"""
+checks that an image is valid
+TODO Account for other types
+"""
+def check_validity_of_image(image, caller):
+    if isinstance(caller, Background):
+        if not isinstance(image, PIL.PngImagePlugin.PngImageFile) and not isinstance(image, PIL.JpegImagePlugin.JpegImageFile):
+            raise TypeError("Image is not an image.")
+    else:
+        raise TypeError("This type doesn't have a valid image to check.")
+
+"""
+checks that a background is valid
+"""
+def check_validity_of_background(background):
+    if not isinstance(background, Background):
+        raise TypeError("Type other than Background passed.")
+    check_validity_of_name(background.name)
+    check_validity_of_image(background.image, background)
