@@ -3,14 +3,95 @@ world.py
 """
 import PIL
 from PIL import Image
+from enum import Enum
 
 """
 Macros
 """
 BACKGROUND_PATH = "images/backgrounds/"
-
+PLATONIC = "platonic"
+ROMANTIC = "romantic"
+SEXUAL = "sexual"
+"""
+Character()
+Description:
+    Creates a character that the player can interact with.
+    Relationships can be platonic or romantic and depending on the character can be romanced.
+    State determines which image will be displayed.
+"""
 class Character():
-    pass
+
+    def __init__(self):
+        self.name = None
+        self.state = None
+        self.platonic_relationship = 0
+        self.romantic_relationship = 0
+        self.sexual_relationship = 0
+        self.images = {}
+
+    def set_name(self, new_name):
+        check_validity_of_name(new_name)
+        self.name = new_name
+    
+    def increase_relationship(self, relation, value):
+        if type(value) != int:
+            raise TypeError("Wrong type entered.")
+        if value < 0:
+            raise ValueError("Negative value entered.")
+        if value > 7:
+            raise ValueError("Too large a value entered.")
+        if type(relation) != type(PLATONIC) or type(relation) != type(ROMANTIC) or type(relation) != type(SEXUAL):
+            raise TypeError("Wrong type entered.")
+
+        if relation == PLATONIC:
+            self.platonic_relationship = self.platonic_relationship + value
+            if self.platonic_relationship > 5:
+                self.platonic_relationship = 5
+            if self.platonic_relationship < -2:
+                self.platonic_relationship = 5
+        if relation == ROMANTIC:
+            self.romantic_relationship = self.romantic_relationship + value
+            if self.romantic_relationship > 5:
+                self.romantic_relationship = 5
+            if self.romantic_relationship < -2:
+                self.romantic_relationship = 5
+        if relation == SEXUAL:
+            self.sexual_relationship = self.sexual_relationship + value
+            if self.sexual_relationship > 5:
+                self.sexual_relationship = 5
+            if self.sexual_relationship < -2:
+                self.sexual_relationship = 5
+
+    def decrease_relationship(self, relation, value):
+        if type(value) != int:
+            raise TypeError("Wrong type entered.")
+        if value < 0:
+            raise ValueError("Negative value entered.")
+        if value > 7:
+            raise ValueError("Too large a value entered.")
+        if type(relation) != type(PLATONIC) or type(relation) != type(ROMANTIC) or type(relation) != type(SEXUAL):
+            raise TypeError("Wrong type entered.")
+        if relation != PLATONIC and relation != ROMANTIC and relation != SEXUAL:
+            raise TypeError("Wrong type entered.")
+
+        if relation == PLATONIC:
+            self.platonic_relationship = self.platonic_relationship - value
+            if self.platonic_relationship > 5:
+                self.platonic_relationship = -2
+            if self.platonic_relationship < -2:
+                self.platonic_relationship = -2
+        if relation == ROMANTIC:
+            self.romantic_relationship = self.romantic_relationship - value
+            if self.romantic_relationship > 5:
+                self.romantic_relationship = -2
+            if self.romantic_relationship < -2:
+                self.romantic_relationship = -2
+        if relation == SEXUAL:
+            self.sexual_relationship = self.sexual_relationship - value
+            if self.sexual_relationship > 5:
+                self.sexual_relationship = -2
+            if self.sexual_relationship < -2:
+                self.sexual_relationship = -2
 
 class Background():
     
@@ -80,7 +161,7 @@ class Game():
 
 
 """
-Utils
+***********Utils***********
 """
 
 """
@@ -121,6 +202,35 @@ def check_validity_of_image(image, caller):
             raise TypeError("Image is not an image.")
     else:
         raise TypeError("This type doesn't have a valid image to check.")
+
+"""
+checks that a character's relationships are valid
+"""
+def check_validity_of_relationships(caller):
+    if type(caller) == Character:
+        platonic = caller.platonic_relationship
+        romantic = caller.romantic_relationship
+        sexual = caller.sexual_relationship
+
+        if type(platonic) == int:
+            if platonic > 5 or platonic < -2:
+                raise ValueError("A relationship value is outside of the range -2 : 5.")
+        else:
+            raise TypeError("A relationship isn't an integer.")
+        
+        if type(romantic) == int:
+            if romantic > 5 or romantic < -2:
+                raise ValueError("A relationship value is outside of the range -2 : 5.")
+        else:
+            raise TypeError("A relationship isn't an integer.")
+        
+        if type(sexual) == int:
+            if sexual > 5 or sexual < -2:
+                raise ValueError("A relationship value is outside of the range -2 : 5.")
+        else:
+            raise TypeError("A relationship isn't an integer.")
+    else:
+        raise TypeError("This type doesn't have valid relationships to check.")
 
 """
 checks that a background is valid

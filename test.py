@@ -5,6 +5,7 @@ import unittest
 from code.world import *
 import PIL
 from PIL import Image
+from enum import Enum
 
 class TestUtil(unittest.TestCase):
     def test_util_check_validity_of_name(self):
@@ -16,12 +17,216 @@ class TestUtil(unittest.TestCase):
         # Search for duplicates
         #with self.assertRaises(ValueError):
         #    check_validity_of_name("Emily")
+    
+    def test_util_check_validity_of_image_path(self):
+        background = Background()
+        with self.assertRaises(TypeError):
+            check_validity_of_image_path(0, background)
+        with self.assertRaises(ValueError):
+            check_validity_of_image_path("does_not_exist", background)
+        with self.assertRaises(FileNotFoundError):
+            check_validity_of_image_path("does_not_exist.png", background)
+        check_validity_of_image_path("example.jpg", background)
+        check_validity_of_image_path("example.png", background)
+
+        # TODO add other type validity checking
+    
+    def test_util_check_validity_of_image(self):
+        background = Background()
+        with self.assertRaises(TypeError):
+            check_validity_of_image(0, background)
+        with self.assertRaises(TypeError):
+            check_validity_of_image("example.png", background)
+        image_png = Image.open("images/backgrounds/example.png")
+        image_jpg = Image.open("images/backgrounds/example.jpg")
+        check_validity_of_image(image_png, background)
+        check_validity_of_image(image_jpg, background)
+    
+    def test_util_check_validity_of_background(self):
+        background = Background()
+        with self.assertRaises(TypeError):
+            check_validity_of_background(background)
+        background.name = "Background1"
+        with self.assertRaises(TypeError):
+            check_validity_of_background(background)
+        background.name = None
+        image_png = Image.open("images/backgrounds/example.png")
+        background.image = image_png
+        with self.assertRaises(TypeError):
+            check_validity_of_background(background)
+        background.name = "Background1"
+        check_validity_of_background(background)
+    
+    def test_check_validity_of_relationships(self):
+        character = Character()
+        character.platonic_relationship = -3
+        with self.assertRaises(ValueError):
+            check_validity_of_relationships(character)
+        character.platonic_relationship = 0
+        character.romantic_relationship = -3
+        with self.assertRaises(ValueError):
+            check_validity_of_relationships(character)
+        character.romantic_relationship = 0
+        character.sexual_relationship = -3
+        with self.assertRaises(ValueError):
+            check_validity_of_relationships(character)
+
+        character.sexual_relationship = 0
+        character.platonic_relationship = 6
+        with self.assertRaises(ValueError):
+            check_validity_of_relationships(character)
+        character.platonic_relationship = 0
+        character.romantic_relationship = 6
+        with self.assertRaises(ValueError):
+            check_validity_of_relationships(character)
+        character.romantic_relationship = 0
+        character.sexual_relationship = 6
+        with self.assertRaises(ValueError):
+            check_validity_of_relationships(character)
+        character.sexual_relationship = 0
+
+        check_validity_of_relationships(character)
+
+        with self.assertRaises(TypeError):
+            check_validity_of_relationships(0)
 
 class TestTextElement(unittest.TestCase):
     pass
 
 class TestCharacter(unittest.TestCase):
-    pass
+    def test_character_default(self):
+        character = Character()
+        self.assertIsNone(character.name)
+        self.assertIsNone(character.state)
+        self.assertEquals(character.platonic_relationship, 0)
+        self.assertEquals(character.romantic_relationship, 0)
+        self.assertEquals(character.sexual_relationship, 0)
+        self.assertEquals(character.images, {})
+
+    def test_character_name(self):
+        character = Character()
+        self.assertIsNone(character.name)
+        with self.assertRaises(TypeError):
+            character.set_name(0)
+        character.set_name("John Doe")
+        self.assertEquals(character.name, "John Doe")
+        character.name = Scene()
+        with self.assertRaises(TypeError):
+            check_validity_of_name(character.name)
+    
+    def test_character_platonic_relationship(self):
+        character = Character()
+        self.assertEquals(character.platonic_relationship, 0)
+        character.increase_relationship(PLATONIC, 3)
+        self.assertEquals(character.platonic_relationship, 3)
+        character.increase_relationship(PLATONIC, 5)
+        self.assertEquals(character.platonic_relationship, 5)
+        with self.assertRaises(ValueError):
+            character.increase_relationship(PLATONIC, -2)
+        self.assertEquals(character.platonic_relationship, 5)
+        character.decrease_relationship(PLATONIC, 4)
+        self.assertEquals(character.platonic_relationship, 1)
+        character.decrease_relationship(PLATONIC, 2)
+        self.assertEquals(character.platonic_relationship, -1)
+        with self.assertRaises(ValueError):
+            character.decrease_relationship(PLATONIC, -3)
+        self.assertEquals(character.platonic_relationship, -1)
+        character.decrease_relationship(PLATONIC, 3)
+        self.assertEquals(character.platonic_relationship, -2)
+        with self.assertRaises(TypeError):
+            character.increase_relationship(PLATONIC, 2.0)
+        self.assertEquals(character.platonic_relationship, -2)
+        character.increase_relationship(PLATONIC, 2)
+        with self.assertRaises(TypeError):
+            character.decrease_relationship(PLATONIC, 2.0)
+        self.assertEquals(character.platonic_relationship, 0)
+        character.platonic_relationship = -3
+        with self.assertRaises(ValueError):
+            check_validity_of_relationships(character)
+        character.platonic_relationship = 6
+        with self.assertRaises(ValueError):
+            check_validity_of_relationships(character)
+        character.platonic_relationship = "eggs"
+        with self.assertRaises(TypeError):
+            check_validity_of_relationships(character)
+    
+    def test_character_romantic_relationship(self):
+        character = Character()
+        self.assertEquals(character.romantic_relationship, 0)
+        character.increase_relationship(ROMANTIC, 3)
+        self.assertEquals(character.romantic_relationship, 3)
+        character.increase_relationship(ROMANTIC, 5)
+        self.assertEquals(character.romantic_relationship, 5)
+        with self.assertRaises(ValueError):
+            character.increase_relationship(ROMANTIC, -2)
+        self.assertEquals(character.romantic_relationship, 5)
+        character.decrease_relationship(ROMANTIC, 4)
+        self.assertEquals(character.romantic_relationship, 1)
+        character.decrease_relationship(ROMANTIC, 2)
+        self.assertEquals(character.romantic_relationship, -1)
+        with self.assertRaises(ValueError):
+            character.decrease_relationship(ROMANTIC, -3)
+        self.assertEquals(character.romantic_relationship, -1)
+        character.decrease_relationship(ROMANTIC, 3)
+        self.assertEquals(character.romantic_relationship, -2)
+        with self.assertRaises(TypeError):
+            character.increase_relationship(ROMANTIC, 2.0)
+        self.assertEquals(character.romantic_relationship, -2)
+        character.increase_relationship(ROMANTIC, 2)
+        with self.assertRaises(TypeError):
+            character.decrease_relationship(ROMANTIC, 2.0)
+        self.assertEquals(character.romantic_relationship, 0)
+        character.romantic_relationship = -3
+        with self.assertRaises(ValueError):
+            check_validity_of_relationships(character)
+        character.romantic_relationship = 6
+        with self.assertRaises(ValueError):
+            check_validity_of_relationships(character)
+        character.romantic_relationship = "eggs"
+        with self.assertRaises(TypeError):
+            check_validity_of_relationships(character)
+
+    def test_character_sexual_relationship(self):
+        character = Character()
+        self.assertEquals(character.sexual_relationship, 0)
+        character.increase_relationship(SEXUAL, 3)
+        self.assertEquals(character.sexual_relationship, 3)
+        character.increase_relationship(SEXUAL, 5)
+        self.assertEquals(character.sexual_relationship, 5)
+        with self.assertRaises(ValueError):
+            character.increase_relationship(SEXUAL, -2)
+        self.assertEquals(character.sexual_relationship, 5)
+        character.decrease_relationship(SEXUAL, 4)
+        self.assertEquals(character.sexual_relationship, 1)
+        character.decrease_relationship(SEXUAL, 2)
+        self.assertEquals(character.sexual_relationship, -1)
+        with self.assertRaises(ValueError):
+            character.decrease_relationship(SEXUAL, -3)
+        self.assertEquals(character.sexual_relationship, -1)
+        character.decrease_relationship(SEXUAL, 3)
+        self.assertEquals(character.sexual_relationship, -2)
+        with self.assertRaises(TypeError):
+            character.increase_relationship(SEXUAL, 2.0)
+        self.assertEquals(character.sexual_relationship, -2)
+        character.increase_relationship(SEXUAL, 2)
+        with self.assertRaises(TypeError):
+            character.decrease_relationship(SEXUAL, 2.0)
+        self.assertEquals(character.sexual_relationship, 0)
+        character.sexual_relationship = -3
+        with self.assertRaises(ValueError):
+            check_validity_of_relationships(character)
+        character.sexual_relationship = 6
+        with self.assertRaises(ValueError):
+            check_validity_of_relationships(character)
+        character.sexual_relationship = "eggs"
+        with self.assertRaises(TypeError):
+            check_validity_of_relationships(character)
+    
+    def test_character_images(self):
+        pass
+
+
+
 
 class TestBackground(unittest.TestCase):
     def test_background_default(self):
